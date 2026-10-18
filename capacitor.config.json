@@ -1,6 +1,6 @@
 {
   "appId": "com.bengkelqu.app",
-  "appName": "Usaha Qu 1.86",
+  "appName": "Usaha Qu 1.87.0",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
