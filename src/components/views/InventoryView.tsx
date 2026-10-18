@@ -22,9 +22,14 @@ import {
   Warehouse,
   History,
   FileText,
-  Globe
+  Globe,
+  Download,
+  ExternalLink,
+  ShoppingCart
 } from 'lucide-react';
-import { Sparepart, DamagedGood, ProcurementRecord } from '../../types';
+import { Sparepart, DamagedGood, ProcurementRecord, WorkshopProfile } from '../../types';
+import { INITIAL_PROFILE } from '../../data/mockData';
+import { downloadOfflineStoreHtml, openOfflineStoreInNewTab } from '../../utils/offlineStoreGenerator';
 import { ImageUploadWithCompression } from '../common/ImageUploadWithCompression';
 import { OnlineStoreToggle } from '../common/OnlineStoreToggle';
 
@@ -33,6 +38,7 @@ interface InventoryViewProps {
   spareparts: Sparepart[];
   damagedGoods: DamagedGood[];
   procurements: ProcurementRecord[];
+  profile?: WorkshopProfile;
   onBack: () => void;
   onUpdateStock: (id: string, newStock: number) => void;
   onAddNewPart: (newPart: Omit<Sparepart, 'id'>) => void;
@@ -71,6 +77,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   spareparts,
   damagedGoods,
   procurements,
+  profile = INITIAL_PROFILE,
   onBack,
   onUpdateStock,
   onAddNewPart,
@@ -763,12 +770,41 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
               </div>
             </div>
 
-            {/* Catalog Info Banner */}
-            <div className="px-1 flex items-center justify-between text-xs text-slate-500">
-              <span className="font-bold">Total Suku Cadang: {filteredCatalog.length} Item</span>
-              <span className="text-[11px] text-emerald-800 font-medium">
-                Stok dikontrol otomatis oleh transaksi, retur & inbound
-              </span>
+            {/* Catalog Info & Export Toko Offline Button */}
+            <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-slate-800 text-xs">
+                  Total Suku Cadang: {filteredCatalog.length} Item
+                </span>
+                <span className="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md font-bold border border-emerald-200">
+                  Stok Terkoneksi Realtime
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const shopName = profile.workshopName || 'BengkelQu';
+                    const filename = `toko-${shopName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.html`;
+                    downloadOfflineStoreHtml(profile, spareparts, filename);
+                    showToast(`Berkas toko offline (${filename}) berhasil diunduh! Siap dibuka offline.`);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition active:scale-95"
+                  title="Unduh file .html toko offline mandiri"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Ekspor Toko Offline (.html)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openOfflineStoreInNewTab(profile, spareparts)}
+                  className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#008952] border border-emerald-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                  title="Preview toko offline di browser"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Buka Preview</span>
+                </button>
+              </div>
             </div>
 
             {/* List View Master Catalog */}

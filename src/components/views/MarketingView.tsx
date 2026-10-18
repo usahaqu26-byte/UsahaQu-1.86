@@ -24,9 +24,11 @@ import {
   ExternalLink,
   Globe,
   Smartphone,
-  RefreshCw
+  RefreshCw,
+  ShoppingCart
 } from 'lucide-react';
-import { MarketingCampaign, PromoVoucher, CustomerVehicle } from '../../types';
+import { MarketingCampaign, PromoVoucher, CustomerVehicle, Sparepart, WorkshopProfile } from '../../types';
+import { INITIAL_SPAREPARTS, INITIAL_PROFILE } from '../../data/mockData';
 import { 
   OnlineStoreConfig, 
   getOnlineStoreConfig, 
@@ -35,6 +37,7 @@ import {
   generateQrCodeDataUrl, 
   downloadQrCodePng 
 } from '../../services/onlineStoreService';
+import { downloadOfflineStoreHtml, openOfflineStoreInNewTab } from '../../utils/offlineStoreGenerator';
 import { StandeePrintModal } from '../marketing/StandeePrintModal';
 
 interface MarketingViewProps {
@@ -47,6 +50,8 @@ interface MarketingViewProps {
   onAddVoucher: (newVoucher: PromoVoucher) => void;
   onToggleVoucherActive: (id: string) => void;
   onOpenOnlineCatalog?: () => void;
+  spareparts?: Sparepart[];
+  profile?: WorkshopProfile;
 }
 
 export const MarketingView: React.FC<MarketingViewProps> = ({
@@ -58,7 +63,9 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
   onSendCampaign,
   onAddVoucher,
   onToggleVoucherActive,
-  onOpenOnlineCatalog
+  onOpenOnlineCatalog,
+  spareparts = INITIAL_SPAREPARTS,
+  profile = INITIAL_PROFILE
 }) => {
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (initialTab === 'toko-online' || initialTab === 'store' || initialTab === 'mkt-store') return 'toko-online';
@@ -500,6 +507,133 @@ export const MarketingView: React.FC<MarketingViewProps> = ({
                     title="Bagikan"
                   >
                     <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 1.5. CARD TOKO OFFLINE MANDIRI (.HTML) - DATA STOK & SPAREPART DENGAN KERANJANG, SEND WA & QR CODE */}
+            <div className="bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-emerald-500/30">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-extrabold text-white">
+                        Toko Offline Mandiri (Format .html)
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+                        ⚡ 100% Offline Tanpa Kuota
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-slate-300 border border-white/10">
+                        Powered by UsahaQu
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-200/80 mt-1">
+                      Katalog stok & sparepart mandiri dalam 1 berkas <code className="bg-black/30 px-1 py-0.5 rounded text-emerald-300 font-mono">.html</code>. Dilengkapi banner logo profil, keranjang belanja, checkout direct WhatsApp & QR Code pembayaran.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const shopName = profile.workshopName || storeConfig.storeName || 'BengkelQu';
+                      const filename = `toko-${shopName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.html`;
+                      downloadOfflineStoreHtml(profile, spareparts, filename);
+                      showToast(`Berkas ${filename} berhasil diunduh! Siap dibuka offline di HP tanpa internet.`);
+                    }}
+                    className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
+                  >
+                    <Download className="w-4 h-4 stroke-[2.5]" />
+                    <span>Unduh File .html</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openOfflineStoreInNewTab(profile, spareparts)}
+                    className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 transition-all cursor-pointer active:scale-95"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Buka Preview (.html)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Rincian Fitur & Parameter Toko Offline */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 mb-1">
+                    <Store className="w-3.5 h-3.5" />
+                    <span>Banner & Header Toko</span>
+                  </div>
+                  <p className="text-xs font-bold text-white truncate">
+                    {profile.workshopName || storeConfig.storeName}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Logo BQ + Powered by UsahaQu
+                  </p>
+                </div>
+
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 mb-1">
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                    <span>Keranjang & Kirim WA</span>
+                  </div>
+                  <p className="text-xs font-bold text-white">
+                    {spareparts.length} Sparepart Terdata
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Kirim order otomatis ke WA: {profile.phone || storeConfig.whatsappNumber}
+                  </p>
+                </div>
+
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 mb-1">
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>QR Code Pembayaran</span>
+                  </div>
+                  <p className="text-xs font-bold text-white">
+                    Offline SVG Generator
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Muncul di modal checkout .html
+                  </p>
+                </div>
+              </div>
+
+              {/* Link Akses Cepat File Publik Standar */}
+              <div className="mt-3.5 pt-3 border-t border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="text-emerald-200/90 text-[11px] flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Berkas mandiri juga tersedia di URL lokal: <code className="bg-black/30 px-1.5 py-0.5 rounded text-emerald-300 font-mono">/toko-bengkel.html</code></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open('/toko-bengkel.html', '_blank');
+                    }}
+                    className="text-[11px] text-emerald-300 hover:text-white font-bold underline cursor-pointer"
+                  >
+                    Buka /toko-bengkel.html ↗
+                  </button>
+                  <span className="text-emerald-600">•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const origin = window.location.origin;
+                      const fileUrl = `${origin}/toko-bengkel.html`;
+                      navigator.clipboard.writeText(fileUrl).then(() => {
+                        showToast('Tautan file /toko-bengkel.html berhasil disalin!');
+                      });
+                    }}
+                    className="text-[11px] text-emerald-300 hover:text-white font-bold underline cursor-pointer"
+                  >
+                    Salin Tautan File
                   </button>
                 </div>
               </div>

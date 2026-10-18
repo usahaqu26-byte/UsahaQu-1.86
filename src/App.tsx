@@ -803,6 +803,7 @@ export default function App() {
               onAddNewPart={handleAddNewPart}
               onSaveInboundStock={handleSaveInboundStock}
               onReportDamagedGood={handleReportDamagedGood}
+              profile={profile}
             />
           );
         case 'pelanggan':
@@ -835,6 +836,8 @@ export default function App() {
                 setOnlineCatalogInitialModule('bengkel');
                 setIsOnlineCatalogOpen(true);
               }}
+              spareparts={spareparts}
+              profile={profile}
             />
           );
         case 'laporan':
